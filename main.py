@@ -1,5 +1,8 @@
+from config import settings
+
+
 def main():
-    print("Hello from playground!")
+    print(settings)
 
 
 if __name__ == "__main__":
