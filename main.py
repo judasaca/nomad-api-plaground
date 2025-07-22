@@ -1,51 +1,37 @@
-from config import settings
-import requests
 from pprint import pprint
 from tqdm import tqdm
 
-api_base_path = settings.api_base_path
+from utils.api_client import APIClient
 
 
-def get_token():
-    response = requests.post(
-        api_base_path + "/auth/token",
-        data={
-            "username": settings.username,
-            "password": settings.password.get_secret_value(),
-        },
-    )
-    body = response.json()
-    token = f"Bearer {body['access_token']}"
-    return token
+client = APIClient()
 
 
 def get_user_info():
-    token = get_token()
-    response = requests.get(
-        api_base_path + "/users/me", headers={"Authorization": token}
-    )
+    response = client.get("/users/me")
     user_info = response.json()
     pprint(user_info)
 
 
-
 def download_upload_bundle(upload_id: str):
-    token = get_token()
-    url = api_base_path + f"/uploads/{upload_id}/bundle"
+    url = f"/uploads/{upload_id}/bundle"
 
-    response = requests.get(url, headers={"Authorization": token}, stream=True)
+    response = client.get(url, stream=True)
     response.raise_for_status()
 
     total_downloaded = 0
     chunk_size = 8192
     filename = f"./files/bundle/{upload_id}.zip"
 
-    with open(filename, "wb") as f, tqdm(
-        unit="B",
-        unit_scale=True,
-        unit_divisor=1024,
-        desc="Downloading",
-    ) as progress:
+    with (
+        open(filename, "wb") as f,
+        tqdm(
+            unit="B",
+            unit_scale=True,
+            unit_divisor=1024,
+            desc="Downloading upload bundle",
+        ) as progress,
+    ):
         for chunk in response.iter_content(chunk_size=chunk_size):
             if chunk:
                 size = len(chunk)
@@ -53,11 +39,43 @@ def download_upload_bundle(upload_id: str):
                 total_downloaded += size
                 progress.update(size)
 
-    print(f"✅ Download complete. Total size: {total_downloaded / 1024 / 1024 / 1024:.2f} GB")
+    print(
+        f"✅ Download complete. Total size: {total_downloaded / 1024 / 1024 / 1024:.2f} GB",
+        f"Upload id: {upload_id}",
+        sep="\n",
+    )
+
+
+def post_upload_bundle(upload_id: str):
+    url = "/uploads/bundle"
+    response = client.post(
+        url,
+    )
+    with open(f"./files/bundle/{upload_id}.zip", "rb") as f:
+        file_size = f.seek(0, 2)
+        f.seek(0)
+        with tqdm(
+            total=file_size, unit="B", unit_scale=True, desc="Posting upload bundle"
+        ) as pbar:
+
+            class Stream:
+                def __init__(self, file_obj):
+                    self.file = file_obj
+
+                def __iter__(self):
+                    while chunk := self.file.read(8192):
+                        pbar.update(len(chunk))
+                        yield chunk
+
+            headers = {"Content-Type": "application/zip"}
+            response = client.post(url, data=Stream(f), headers=headers)
+            print(response.status_code, response.text)
 
 
 def main():
-    download_upload_bundle(upload_id="tmNTuQ_bSOGWTCBDIUjmcA")
+    upload_id = "tmNTuQ_bSOGWTCBDIUjmcA"
+    download_upload_bundle(upload_id)
+    post_upload_bundle(upload_id)
 
 
 if __name__ == "__main__":
