@@ -1,15 +1,49 @@
 from config import settings
 import requests
+from pprint import pprint
+from tqdm import tqdm
 
 api_base_path = settings.api_base_path
 
 
-def main():
+def get_token():
     response = requests.post(
         api_base_path + "/auth/token",
-        data={"username": settings.username, "password": settings.password.get_secret_value()},
+        data={
+            "username": settings.username,
+            "password": settings.password.get_secret_value(),
+        },
     )
-    print(response.status_code, response.json())
+    body = response.json()
+    token = f"Bearer {body['access_token']}"
+    return token
+
+
+def get_user_info():
+    token = get_token()
+    response = requests.get(
+        api_base_path + "/users/me", headers={"Authorization": token}
+    )
+    user_info = response.json()
+    pprint(user_info)
+
+
+def download_upload_bundle(upload_id: str):
+    token = get_token()
+    response = requests.get(
+        api_base_path + f"/uploads/{upload_id}/bundle",
+        headers={"Authorization": token},
+        stream=True,
+    )
+    response.raise_for_status()
+    with open(f"./files/bundle/{upload_id}.zip", "wb") as f:
+        for chunk in tqdm(response.iter_content(chunk_size=8192)):
+            if chunk:
+                f.write(chunk)
+
+
+def main():
+    download_upload_bundle(upload_id="tmNTuQ_bSOGWTCBDIUjmcA")
 
 
 if __name__ == "__main__":
