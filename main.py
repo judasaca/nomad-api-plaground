@@ -28,18 +28,32 @@ def get_user_info():
     pprint(user_info)
 
 
+
 def download_upload_bundle(upload_id: str):
     token = get_token()
-    response = requests.get(
-        api_base_path + f"/uploads/{upload_id}/bundle",
-        headers={"Authorization": token},
-        stream=True,
-    )
+    url = api_base_path + f"/uploads/{upload_id}/bundle"
+
+    response = requests.get(url, headers={"Authorization": token}, stream=True)
     response.raise_for_status()
-    with open(f"./files/bundle/{upload_id}.zip", "wb") as f:
-        for chunk in tqdm(response.iter_content(chunk_size=8192)):
+
+    total_downloaded = 0
+    chunk_size = 8192
+    filename = f"./files/bundle/{upload_id}.zip"
+
+    with open(filename, "wb") as f, tqdm(
+        unit="B",
+        unit_scale=True,
+        unit_divisor=1024,
+        desc="Downloading",
+    ) as progress:
+        for chunk in response.iter_content(chunk_size=chunk_size):
             if chunk:
+                size = len(chunk)
                 f.write(chunk)
+                total_downloaded += size
+                progress.update(size)
+
+    print(f"✅ Download complete. Total size: {total_downloaded / 1024 / 1024 / 1024:.2f} GB")
 
 
 def main():
