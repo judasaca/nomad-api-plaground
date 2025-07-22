@@ -72,10 +72,15 @@ def post_upload_bundle(upload_id: str):
             print(response.status_code, response.text)
 
 
+def delete_upload(upload_id: str):
+    res = client.delete(f'/uploads/{upload_id}')
+
+
 def main():
     upload_id = "tmNTuQ_bSOGWTCBDIUjmcA"
-    download_upload_bundle(upload_id)
-    post_upload_bundle(upload_id)
+    #download_upload_bundle(upload_id)
+    #post_upload_bundle(upload_id)
+    delete_upload(upload_id)
 
 
 if __name__ == "__main__":

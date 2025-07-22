@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import Any, Dict, Optional, Union
 import requests
 from urllib.parse import urljoin
@@ -29,7 +30,7 @@ class APIClient:
         **kwargs,
     ) -> requests.Response:
         url = urljoin(self.base_url + "/", path.lstrip("/"))
-        return self.session.request(
+        response = self.session.request(
             method=method,
             url=url,
             params=params,
@@ -40,6 +41,10 @@ class APIClient:
             timeout=timeout,
             **kwargs,
         )
+        content_type = response.headers['content-type']
+        if content_type == 'application/json':
+            pprint(response.json())
+        return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
         return self._request("GET", path, **kwargs)
