@@ -1,6 +1,8 @@
 from utils.api_client import APIClient
 
 client = APIClient()
+
+
 def download_upload_bundle(upload_id: str):
     url = f"/uploads/{upload_id}/bundle"
 
@@ -57,4 +59,10 @@ def post_upload_bundle(upload_id: str):
 
 
 def delete_upload(upload_id: str):
-    res = client.delete(f'/uploads/{upload_id}')
+    res = client.delete(f"/uploads/{upload_id}")
+
+
+def publish_upload_to_main_deployment(upload_id: str):
+    res = client.post(
+        f"/uploads/{upload_id}/action/publish", params={"to_central_nomad": True}
+    )
