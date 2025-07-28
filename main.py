@@ -5,6 +5,7 @@ from actions.auth import get_user_info
 from actions.uploads import delete_upload, download_upload_bundle, post_upload_bundle, publish_upload_to_main_deployment, transfer_upload
 from utils.api_client import APIClient
 from utils.auth import get_token
+from utils.logger import configure_logger
 
 
 

@@ -5,15 +5,17 @@ from time import time
 from functools import wraps
 
 # Configure loguru
-logger.remove()
-logger.add(
-    sys.stdout,
-    colorize=True,
-#    format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-#           "<level>{level: <8}</level> | "
-#           "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
-#           "<level>{message}</level>"
-)
+def configure_logger():
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        format="<green>{time:hh:mm:ss}</green> | "
+               "<level>{level: <8}</level>"
+               "\n"
+               "<level>{message}</level>"
+               "\n"
+    )
 
 # Optional: log to a file as JSON
 #logger.add("debug.json", serialize=True, level="DEBUG")
