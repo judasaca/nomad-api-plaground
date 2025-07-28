@@ -17,7 +17,7 @@ class APIClient:
             self.session.headers.update({"Authorization": self._token})
         else:
             self._token = None
-        logger.info('Client started. Base url: {}', self.base_url)
+        logger.info("Client started. Base url: {}", self.base_url)
 
     def _request(
         self,
@@ -32,7 +32,7 @@ class APIClient:
         **kwargs,
     ) -> requests.Response:
         url = urljoin(self.base_url + "/", path.lstrip("/"))
-        logger.info(f'Hitting... {path}')
+        logger.info(f"Hitting... {path}")
         response = self.session.request(
             method=method,
             url=url,
@@ -44,9 +44,20 @@ class APIClient:
             timeout=timeout,
             **kwargs,
         )
-        content_type = response.headers['content-type']
-        if content_type == 'application/json':
-            logger.info("Response JSON:\n{}", response.json())
+        content_type = response.headers["content-type"]
+        if content_type == "application/json":
+            response_time_ms = response.elapsed.total_seconds() * 1000
+            # Determine color
+            if response.ok:
+                status_str = f"\033[92m{response.status_code}\033[0m"  # Green
+            else:
+                status_str = f"\033[91m{response.status_code}\033[0m"  # Red
+            logger.info(
+                """Response time: {response_time} ms\nStatus Code: {status_code} \nResponse JSON:\n\t{body}""",
+                response_time=response_time_ms,
+                body=response.json(),
+                status_code=status_str
+            )
         return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
