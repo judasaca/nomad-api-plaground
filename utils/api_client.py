@@ -16,6 +16,7 @@ class APIClient:
             self.session.headers.update({"Authorization": self._token})
         else:
             self._token = None
+        print('Client started. Base url:', self.base_url)
 
     def _request(
         self,

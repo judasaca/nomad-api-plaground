@@ -1,4 +1,5 @@
 from utils.api_client import APIClient
+from tqdm import tqdm
 
 client = APIClient()
 
@@ -66,3 +67,7 @@ def publish_upload_to_main_deployment(upload_id: str):
     res = client.post(
         f"/uploads/{upload_id}/action/publish", params={"to_central_nomad": True}
     )
+
+def transfer_upload(upload_id: str):
+    res = client.post(f"/uploafs/{upload_id}/action/transfer")
+
