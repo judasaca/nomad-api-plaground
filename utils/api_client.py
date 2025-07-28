@@ -4,6 +4,7 @@ import requests
 from urllib.parse import urljoin
 
 from config import settings
+from loguru import logger
 from utils.auth import get_token
 
 
@@ -16,7 +17,7 @@ class APIClient:
             self.session.headers.update({"Authorization": self._token})
         else:
             self._token = None
-        print('Client started. Base url:', self.base_url)
+        logger.info('Client started. Base url: {}', self.base_url)
 
     def _request(
         self,
@@ -31,6 +32,7 @@ class APIClient:
         **kwargs,
     ) -> requests.Response:
         url = urljoin(self.base_url + "/", path.lstrip("/"))
+        logger.info(f'Hitting... {path}')
         response = self.session.request(
             method=method,
             url=url,
@@ -44,7 +46,7 @@ class APIClient:
         )
         content_type = response.headers['content-type']
         if content_type == 'application/json':
-            pprint(response.json())
+            logger.info("Response JSON:\n{}", response.json())
         return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
