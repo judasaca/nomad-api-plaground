@@ -1,10 +1,9 @@
 from utils.api_client import APIClient
 from tqdm import tqdm
 
-client = APIClient()
 
 
-def download_upload_bundle(upload_id: str):
+def download_upload_bundle(upload_id: str, client: APIClient):
     url = f"/uploads/{upload_id}/bundle"
 
     response = client.get(url, stream=True)
@@ -37,7 +36,7 @@ def download_upload_bundle(upload_id: str):
     )
 
 
-def post_upload_bundle(upload_id: str):
+def post_upload_bundle(upload_id: str, client: APIClient):
     url = "/uploads/bundle"
     with open(f"./files/bundle/{upload_id}.zip", "rb") as f:
         file_size = f.seek(0, 2)
@@ -59,15 +58,30 @@ def post_upload_bundle(upload_id: str):
             response = client.post(url, data=Stream(f), headers=headers)
 
 
-def delete_upload(upload_id: str):
+def delete_upload(upload_id: str, client: APIClient):
     res = client.delete(f"/uploads/{upload_id}")
 
 
-def publish_upload_to_main_deployment(upload_id: str):
+def publish_upload_to_main_deployment(upload_id: str, client: APIClient):
     res = client.post(
         f"/uploads/{upload_id}/action/publish", params={"to_central_nomad": True}
     )
 
-def transfer_upload(upload_id: str):
-    res = client.post(f"/uploads/{upload_id}/action/transfer")
 
+def transfer_upload(upload_id: str):
+    local_client = APIClient(
+        base_url="http://localhost:8000/fairdi/nomad/latest/api/v1"
+    )
+    oasis_client = APIClient(base_url="http://localhost:80/nomad-oasis/api/v1")
+    oasis_token = oasis_client._token
+
+    #Clean up target oasis upload
+    delete_upload(upload_id, client=oasis_client)
+
+    res = local_client.post(
+        f"/uploads/{upload_id}/action/transfer",
+        json={
+            "target_deployment_url": "http://localhost:80/nomad-oasis/api",
+            "auth_token": oasis_token,
+        },
+    )

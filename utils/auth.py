@@ -2,17 +2,16 @@ from config import settings
 import requests
 
 
-_api_base_path = settings.api_base_path
 
-
-def get_token():
+def get_token(base_path: str, username: str, password: str):
     response = requests.post(
-        _api_base_path + "/auth/token",
+        base_path + "/auth/token",
         data={
-            "username": settings.username,
-            "password": settings.password.get_secret_value(),
+            "username": username,
+            "password": password,
         },
     )
     body = response.json()
-    token = f"Bearer {body['access_token']}"
+    print(response)
+    token = body['access_token']
     return token

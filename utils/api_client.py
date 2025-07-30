@@ -9,12 +9,16 @@ from utils.auth import get_token
 
 
 class APIClient:
-    def __init__(self, authenticated: bool = True):
-        self.base_url = settings.api_base_path
+    def __init__(self, authenticated: bool = True, base_url: str | None = None):
+        self.base_url = base_url or settings.api_base_path
         self.session = requests.Session()
         if authenticated:
-            self._token = get_token()
-            self.session.headers.update({"Authorization": self._token})
+            self._token = get_token(
+                base_path=self.base_url,
+                username=settings.username,
+                password=settings.password.get_secret_value(),
+            )
+            self.session.headers.update({"Authorization": f"Bearer {self._token}"})
         else:
             self._token = None
         logger.info("Client started. Base url: {}", self.base_url)
@@ -56,7 +60,7 @@ class APIClient:
                 """Response time: {response_time} ms\nStatus Code: {status_code} \nResponse JSON:\n\t{body}""",
                 response_time=response_time_ms,
                 body=pformat(response.json()),
-                status_code=status_str
+                status_code=status_str,
             )
         return response
 
