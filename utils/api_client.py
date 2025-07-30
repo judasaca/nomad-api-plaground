@@ -1,4 +1,4 @@
-from pprint import pprint
+from pprint import pformat, pprint
 from typing import Any, Dict, Optional, Union
 import requests
 from urllib.parse import urljoin
@@ -55,7 +55,7 @@ class APIClient:
             logger.info(
                 """Response time: {response_time} ms\nStatus Code: {status_code} \nResponse JSON:\n\t{body}""",
                 response_time=response_time_ms,
-                body=response.json(),
+                body=pformat(response.json()),
                 status_code=status_str
             )
         return response
