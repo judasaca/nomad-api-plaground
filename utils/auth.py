@@ -4,6 +4,7 @@ import requests
 
 
 def get_token(base_path: str, username: str, password: str):
+    print(base_path, username, password)
     response = requests.post(
         base_path + "/auth/token",
         data={
@@ -12,6 +13,5 @@ def get_token(base_path: str, username: str, password: str):
         },
     )
     body = response.json()
-    print(response)
     token = body['access_token']
     return token

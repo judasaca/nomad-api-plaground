@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from config import settings
 from loguru import logger
 from utils.auth import get_token
+from utils.logger import log_timing
 
 
 class APIClient:
@@ -33,6 +34,7 @@ class APIClient:
         headers: Optional[Dict[str, str]] = None,
         files: Optional[Any] = None,
         timeout: Optional[int] = None,
+        print_body: bool = False,
         **kwargs,
     ) -> requests.Response:
         url = urljoin(self.base_url + "/", path.lstrip("/"))
@@ -50,7 +52,7 @@ class APIClient:
         )
         content_type = response.headers["content-type"]
         if content_type == "application/json":
-            response_time_ms = response.elapsed.total_seconds() * 1000
+            response_time_ms = round(response.elapsed.total_seconds() * 1000, 1)
             # Determine color
             if response.ok:
                 status_str = f"\033[92m{response.status_code}\033[0m"  # Green
@@ -59,7 +61,7 @@ class APIClient:
             logger.info(
                 """Response time: {response_time} ms\nStatus Code: {status_code} \nResponse JSON:\n\t{body}""",
                 response_time=response_time_ms,
-                body=pformat(response.json()),
+                body=pformat(response.json()) if print_body else None, 
                 status_code=status_str,
             )
         return response

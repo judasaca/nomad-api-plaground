@@ -4,8 +4,7 @@ import requests
 from utils.api_client import APIClient
 
 
-client = APIClient()
-def get_user_info():
+def get_user_info(client: APIClient):
     response = client.get("/users/me")
     user_info = response.json()
 

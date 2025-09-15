@@ -24,11 +24,12 @@ def configure_logger():
 def log_timing(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
+        path = kwargs.get('path')
         start = time()
         logger.debug(f"🔄 Starting '{func.__name__}'...")
         result = func(*args, **kwargs)
         elapsed = time() - start
-        logger.success(f"✅ Finished '{func.__name__}' in {elapsed:.3f}s")
+        logger.success(f"✅ Finished '{func.__name__}' '{path}' in {elapsed:.3f}s")
         return result
     return wrapper
 

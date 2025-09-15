@@ -1,3 +1,4 @@
+from utils.logger import logger
 from utils.api_client import APIClient
 from tqdm import tqdm
 
@@ -68,6 +69,25 @@ def publish_upload_to_main_deployment(upload_id: str, client: APIClient):
     )
 
 
+def transfer_upload_with_bad_token(upload_id: str):
+    local_client = APIClient(
+        base_url="http://localhost:8000/fairdi/nomad/latest/api/v1"
+    )
+    oasis_client = APIClient(base_url="http://localhost:80/nomad-oasis/api/v1")
+    oasis_token = oasis_client._token
+
+    #Clean up target oasis upload
+    delete_upload(upload_id, client=oasis_client)
+
+    res = local_client.post(
+        f"/uploads/{upload_id}/action/transfer",
+        json={
+            #"target_deployment_url": "http://localhost:80/nomad-oasis/api",
+            "auth_token": "abcdefghtedas",
+            "embargo_length": 5
+        },
+    )
+
 def transfer_upload(upload_id: str):
     local_client = APIClient(
         base_url="http://localhost:8000/fairdi/nomad/latest/api/v1"
@@ -81,7 +101,13 @@ def transfer_upload(upload_id: str):
     res = local_client.post(
         f"/uploads/{upload_id}/action/transfer",
         json={
-            "target_deployment_url": "http://localhost:80/nomad-oasis/api",
+            #"target_deployment_url": "http://localhost:80/nomad-oasis/api",
             "auth_token": oasis_token,
+            "embargo_length": 5
         },
     )
+
+
+def get_upload(upload_id:str, client: APIClient):
+    res = client.get(f"/uploads/{upload_id}")
+    logger.debug(res.json())
