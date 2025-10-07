@@ -34,6 +34,54 @@ class APIClient:
             self._token = None
         logger.info("Client started. Base url: {}", self.base_url)
 
+    def _generate_log_box(
+        self, method: str, path: str, response: requests.Response | None = None
+    ):
+        header_text = Text()
+        header_text.append(f"Base: {self.base_url}\n")
+        header_text.append(f"{method} ", style="bold cyan")
+        header_text.append(f"{path}\n", style="bold white")
+        border_style = "dim"
+        if response is not None:
+            status = response.status_code
+            if 200 <= status < 300:
+                status_color = "green"
+            elif 300 <= status < 400:
+                status_color = "yellow"
+            else:
+                status_color = "red"
+
+            # --- build updated info ---
+            header_text.append("Status: ", style="bold")
+            header_text.append(f"{status}\n", style=status_color)
+            header_text.append("Time: ", style="bold")
+            header_text.append(
+                f"{response.elapsed.total_seconds() * 1000:.1f} ms\n", style="blue"
+            )
+            border_style = status_color
+            content_type = response.headers["content-type"]
+            if content_type == "application/json":
+                body_json = response.json()
+                #syntax = Syntax(
+                #    dumps(body_json, indent=2),
+                #    "json",
+                #    theme="monokai",
+                #    line_numbers=False,
+                #)
+                header_text.append(
+                    dumps(body_json, indent=2),
+                )
+        else:
+            header_text.append("Status: ", style="bold")
+            header_text.append("pending...", style="yellow")
+            header_text.append("\nTime: ", style="bold")
+            header_text.append("—", style="dim")
+
+        panel = Panel(
+            header_text, border_style=border_style, title="Request", expand=False
+        )
+        return panel
+
     def _request(
         self,
         method: str,
@@ -47,18 +95,9 @@ class APIClient:
         print_body: bool = False,
         **kwargs,
     ) -> requests.Response:
-        header_text = Text()
-        header_text.append(f"Base: {self.base_url}")
-        header_text.append(f"{method} ", style="bold cyan")
-        header_text.append(f"{path}\n", style="bold white")
-        header_text.append("Status: ", style="bold")
-        header_text.append("pending...", style="yellow")
-        header_text.append("\nTime: ", style="bold")
-        header_text.append("—", style="dim")
-
+        panel = self._generate_log_box(method, path)
         url = urljoin(self.base_url + "/", path.lstrip("/"))
-        panel = Panel(header_text, border_style="dim", title="Request", expand=False)
-        with Live(panel, refresh_per_second=8, console=console):
+        with Live(panel, refresh_per_second=8, console=console) as live:
             response = self.session.request(
                 method=method,
                 url=url,
@@ -70,38 +109,10 @@ class APIClient:
                 timeout=timeout,
                 **kwargs,
             )
-            status = response.status_code
-            if 200 <= status < 300:
-                status_color = "green"
-            elif 300 <= status < 400:
-                status_color = "yellow"
-            else:
-                status_color = "red"
-
-            # --- build updated info ---
-            header_text = Text()
-            header_text.append(f"{method} ", style="bold cyan")
-            header_text.append(f"{url}\n", style="bold white")
-            header_text.append("Status: ", style="bold")
-            header_text.append(f"{status}\n", style=status_color)
-            header_text.append("Time: ", style="bold")
-            header_text.append(
-                f"{response.elapsed.total_seconds() * 1000:.1f} ms\n", style="blue"
-            )
-            content_type = response.headers["content-type"]
-            if content_type == "application/json":
-                body_json = response.json()
-                syntax = Syntax(
-                    dumps(body_json, indent=2),
-                    "json",
-                    theme="monokai",
-                    line_numbers=False,
-                )
-                body_renderable = syntax
 
             # update the live panel
-            console.print(Panel(header_text, title="Response", border_style=status_color, expand=False))
-            console.print(panel)
+            print(method, response)
+            live.update(self._generate_log_box(method, path, response))
             return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
