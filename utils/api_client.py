@@ -35,7 +35,11 @@ class APIClient:
         logger.info("Client started. Base url: {}", self.base_url)
 
     def _generate_log_box(
-        self, method: str, path: str, response: requests.Response | None = None
+        self,
+        method: str,
+        path: str,
+        print_body: bool,
+        response: requests.Response | None = None,
     ):
         header_text = Text()
         header_text.append(f"Base: {self.base_url}\n")
@@ -60,14 +64,14 @@ class APIClient:
             )
             border_style = status_color
             content_type = response.headers["content-type"]
-            if content_type == "application/json":
+            if content_type == "application/json" and print_body:
                 body_json = response.json()
-                #syntax = Syntax(
+                # syntax = Syntax(
                 #    dumps(body_json, indent=2),
                 #    "json",
                 #    theme="monokai",
                 #    line_numbers=False,
-                #)
+                # )
                 header_text.append(
                     dumps(body_json, indent=2),
                 )
@@ -95,7 +99,7 @@ class APIClient:
         print_body: bool = False,
         **kwargs,
     ) -> requests.Response:
-        panel = self._generate_log_box(method, path)
+        panel = self._generate_log_box(method, path, print_body)
         url = urljoin(self.base_url + "/", path.lstrip("/"))
         with Live(panel, refresh_per_second=8, console=console) as live:
             response = self.session.request(
@@ -109,10 +113,7 @@ class APIClient:
                 timeout=timeout,
                 **kwargs,
             )
-
-            # update the live panel
-            print(method, response)
-            live.update(self._generate_log_box(method, path, response))
+            live.update(self._generate_log_box(method, path, print_body, response))
             return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
