@@ -1,7 +1,9 @@
+from requests import request
 from utils.logger import logger
 from utils.api_client import APIClient
 from tqdm import tqdm
 
+from utils.zip_utils import zip_folder_in_memory
 
 
 def download_upload_bundle(upload_id: str, client: APIClient):
@@ -76,17 +78,18 @@ def transfer_upload_with_bad_token(upload_id: str):
     oasis_client = APIClient(base_url="http://localhost:80/nomad-oasis/api/v1")
     oasis_token = oasis_client._token
 
-    #Clean up target oasis upload
+    # Clean up target oasis upload
     delete_upload(upload_id, client=oasis_client)
 
     res = local_client.post(
         f"/uploads/{upload_id}/action/transfer",
         json={
-            #"target_deployment_url": "http://localhost:80/nomad-oasis/api",
+            # "target_deployment_url": "http://localhost:80/nomad-oasis/api",
             "auth_token": "abcdefghtedas",
-            "embargo_length": 5
+            "embargo_length": 5,
         },
     )
+
 
 def transfer_upload(upload_id: str):
     local_client = APIClient(
@@ -95,19 +98,30 @@ def transfer_upload(upload_id: str):
     oasis_client = APIClient(base_url="http://localhost:80/nomad-oasis/api/v1")
     oasis_token = oasis_client._token
 
-    #Clean up target oasis upload
+    # Clean up target oasis upload
     delete_upload(upload_id, client=oasis_client)
 
     res = local_client.post(
         f"/uploads/{upload_id}/action/transfer",
         json={
-            #"target_deployment_url": "http://localhost:80/nomad-oasis/api",
+            # "target_deployment_url": "http://localhost:80/nomad-oasis/api",
             "auth_token": oasis_token,
-            "embargo_length": 5
+            "embargo_length": 5,
         },
     )
 
 
-def get_upload(upload_id:str, client: APIClient):
+def get_upload(upload_id: str, client: APIClient):
     res = client.get(f"/uploads/{upload_id}")
     logger.debug(res.json())
+
+
+def create_new_upload(client: APIClient):
+    buffer = zip_folder_in_memory("./files/test_multi_delete")
+    files = {"file": ("test_multi_delete.zip", buffer, "application/zip")}
+    response = client.post("/uploads", files=files)
+
+
+def delete_single_raw_file(upload_id: str, path: str, client: APIClient):
+    response = client.delete(f"/uploads/{upload_id}/raw/{path}")
+    logger.debug(response.json())

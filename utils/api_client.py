@@ -1,4 +1,6 @@
+from json import dumps
 from pprint import pformat, pprint
+from rich.syntax import Syntax
 from typing import Any, Dict, Optional, Union
 import requests
 from urllib.parse import urljoin
@@ -7,6 +9,14 @@ from config import settings
 from loguru import logger
 from utils.auth import get_token
 from utils.logger import log_timing
+from rich.console import Console
+from rich.live import Live
+from rich.table import Table
+from rich.text import Text
+from rich.panel import Panel
+
+
+console = Console()
 
 
 class APIClient:
@@ -37,34 +47,62 @@ class APIClient:
         print_body: bool = False,
         **kwargs,
     ) -> requests.Response:
+        header_text = Text()
+        header_text.append(f"Base: {self.base_url}")
+        header_text.append(f"{method} ", style="bold cyan")
+        header_text.append(f"{path}\n", style="bold white")
+        header_text.append("Status: ", style="bold")
+        header_text.append("pending...", style="yellow")
+        header_text.append("\nTime: ", style="bold")
+        header_text.append("—", style="dim")
+
         url = urljoin(self.base_url + "/", path.lstrip("/"))
-        logger.info(f"Hitting... {path}")
-        response = self.session.request(
-            method=method,
-            url=url,
-            params=params,
-            data=data,
-            json=json,
-            headers=headers,
-            files=files,
-            timeout=timeout,
-            **kwargs,
-        )
-        content_type = response.headers["content-type"]
-        if content_type == "application/json":
-            response_time_ms = round(response.elapsed.total_seconds() * 1000, 1)
-            # Determine color
-            if response.ok:
-                status_str = f"\033[92m{response.status_code}\033[0m"  # Green
-            else:
-                status_str = f"\033[91m{response.status_code}\033[0m"  # Red
-            logger.info(
-                """Response time: {response_time} ms\nStatus Code: {status_code} \nResponse JSON:\n\t{body}""",
-                response_time=response_time_ms,
-                body=pformat(response.json()) if print_body else None, 
-                status_code=status_str,
+        panel = Panel(header_text, border_style="dim", title="Request", expand=False)
+        with Live(panel, refresh_per_second=8, console=console):
+            response = self.session.request(
+                method=method,
+                url=url,
+                params=params,
+                data=data,
+                json=json,
+                headers=headers,
+                files=files,
+                timeout=timeout,
+                **kwargs,
             )
-        return response
+            status = response.status_code
+            if 200 <= status < 300:
+                status_color = "green"
+            elif 300 <= status < 400:
+                status_color = "yellow"
+            else:
+                status_color = "red"
+
+            # --- build updated info ---
+            header_text = Text()
+            header_text.append(f"{method} ", style="bold cyan")
+            header_text.append(f"{url}\n", style="bold white")
+            header_text.append("Status: ", style="bold")
+            header_text.append(f"{status}\n", style=status_color)
+            header_text.append("Time: ", style="bold")
+            header_text.append(
+                f"{response.elapsed.total_seconds() * 1000:.1f} ms\n", style="blue"
+            )
+            content_type = response.headers["content-type"]
+            if content_type == "application/json":
+                body_json = response.json()
+                syntax = Syntax(
+                    dumps(body_json, indent=2),
+                    "json",
+                    theme="monokai",
+                    line_numbers=False,
+                )
+                body_renderable = syntax
+
+            # update the live panel
+            console.print(Panel(header_text, title="Response", border_style=status_color, expand=False))
+            console.print(panel)
+            return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
         return self._request("GET", path, **kwargs)
