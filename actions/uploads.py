@@ -53,16 +53,19 @@ def post_upload_bundle(upload_id: str, client: APIClient):
 
         headers = {"Content-Type": "application/zip"}
         response = client.post(url, data=Stream(f), headers=headers)
+        return response
 
 
 def delete_upload(upload_id: str, client: APIClient):
     res = client.delete(f"/uploads/{upload_id}")
+    return res
 
 
 def publish_upload_to_main_deployment(upload_id: str, client: APIClient):
     res = client.post(
         f"/uploads/{upload_id}/action/publish", params={"to_central_nomad": True}
     )
+    return res
 
 
 def transfer_upload_with_bad_token(upload_id: str):
@@ -70,7 +73,6 @@ def transfer_upload_with_bad_token(upload_id: str):
         base_url="http://localhost:8000/fairdi/nomad/latest/api/v1"
     )
     oasis_client = APIClient(base_url="http://localhost:80/nomad-oasis/api/v1")
-    oasis_token = oasis_client._token
 
     # Clean up target oasis upload
     delete_upload(upload_id, client=oasis_client)
@@ -83,6 +85,7 @@ def transfer_upload_with_bad_token(upload_id: str):
             "embargo_length": 5,
         },
     )
+    return res
 
 
 def transfer_upload(upload_id: str):
@@ -103,6 +106,7 @@ def transfer_upload(upload_id: str):
             "embargo_length": 5,
         },
     )
+    return res
 
 
 def get_upload(upload_id: str, client: APIClient):
@@ -114,6 +118,7 @@ def create_new_upload(client: APIClient):
     buffer = zip_folder_in_memory("./files/test_multi_delete")
     files = {"file": ("test_multi_delete.zip", buffer, "application/zip")}
     response = client.post("/uploads", files=files)
+    return response
 
 
 def delete_single_raw_file(upload_id: str, path: str, client: APIClient):

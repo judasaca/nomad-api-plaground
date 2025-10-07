@@ -1,4 +1,3 @@
-
 import requests
 from utils.api_client import APIClient
 
@@ -6,6 +5,7 @@ from utils.api_client import APIClient
 def get_user_info(client: APIClient):
     response = client.get("/users/me")
     user_info = response.json()
+    return user_info
 
 
 def check_health():
