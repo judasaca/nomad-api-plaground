@@ -42,23 +42,18 @@ def download_upload_bundle(upload_id: str, client: APIClient):
 def post_upload_bundle(upload_id: str, client: APIClient):
     url = "/uploads/bundle"
     with open(f"./files/bundle/{upload_id}.zip", "rb") as f:
-        file_size = f.seek(0, 2)
         f.seek(0)
-        with tqdm(
-            total=file_size, unit="B", unit_scale=True, desc="Posting upload bundle"
-        ) as pbar:
 
-            class Stream:
-                def __init__(self, file_obj):
-                    self.file = file_obj
+        class Stream:
+            def __init__(self, file_obj):
+                self.file = file_obj
 
-                def __iter__(self):
-                    while chunk := self.file.read(8192):
-                        pbar.update(len(chunk))
-                        yield chunk
+            def __iter__(self):
+                while chunk := self.file.read(8192):
+                    yield chunk
 
-            headers = {"Content-Type": "application/zip"}
-            response = client.post(url, data=Stream(f), headers=headers)
+        headers = {"Content-Type": "application/zip"}
+        response = client.post(url, data=Stream(f), headers=headers)
 
 
 def delete_upload(upload_id: str, client: APIClient):
@@ -124,4 +119,4 @@ def create_new_upload(client: APIClient):
 
 def delete_single_raw_file(upload_id: str, path: str, client: APIClient):
     response = client.delete(f"/uploads/{upload_id}/raw/{path}")
-    logger.debug(response.json())
+    return response

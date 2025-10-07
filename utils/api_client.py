@@ -64,7 +64,9 @@ class APIClient:
             )
             border_style = status_color
             content_type = response.headers["content-type"]
-            if content_type == "application/json" and print_body:
+            if (
+                content_type == "application/json" and print_body
+            ) or status_color == "red":
                 body_json = response.json()
                 # syntax = Syntax(
                 #    dumps(body_json, indent=2),
