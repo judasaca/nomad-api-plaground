@@ -1,8 +1,8 @@
 from loguru import logger
 import sys
-import json
 from time import time
 from functools import wraps
+
 
 # Configure loguru
 def configure_logger():
@@ -11,25 +11,27 @@ def configure_logger():
         sys.stdout,
         colorize=True,
         format="<green>{time:hh:mm:ss}</green> | "
-               "<level>{level: <8}</level>"
-               "\n"
-               "<level>{message}</level>"
-               "\n"
+        "<level>{level: <8}</level>"
+        "\n"
+        "<level>{message}</level>"
+        "\n",
     )
 
+
 # Optional: log to a file as JSON
-#logger.add("debug.json", serialize=True, level="DEBUG")
+# logger.add("debug.json", serialize=True, level="DEBUG")
+
 
 # Timing decorator
 def log_timing(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        path = kwargs.get('path')
+        path = kwargs.get("path")
         start = time()
         logger.debug(f"🔄 Starting '{func.__name__}'...")
         result = func(*args, **kwargs)
         elapsed = time() - start
         logger.success(f"✅ Finished '{func.__name__}' '{path}' in {elapsed:.3f}s")
         return result
-    return wrapper
 
+    return wrapper

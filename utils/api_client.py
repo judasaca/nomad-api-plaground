@@ -1,6 +1,4 @@
 from json import dumps
-from pprint import pformat, pprint
-from rich.syntax import Syntax
 from typing import Any, Dict, Optional, Union
 import requests
 from urllib.parse import urljoin
@@ -8,10 +6,8 @@ from urllib.parse import urljoin
 from config import settings
 from loguru import logger
 from utils.auth import get_token
-from utils.logger import log_timing
 from rich.console import Console
 from rich.live import Live
-from rich.table import Table
 from rich.text import Text
 from rich.panel import Panel
 

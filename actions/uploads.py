@@ -1,4 +1,3 @@
-from requests import request
 from utils.logger import logger
 from utils.api_client import APIClient
 from tqdm import tqdm
