@@ -68,12 +68,6 @@ class APIClient:
                 content_type == "application/json" and print_body
             ) or status_color == "red":
                 body_json = response.json()
-                # syntax = Syntax(
-                #    dumps(body_json, indent=2),
-                #    "json",
-                #    theme="monokai",
-                #    line_numbers=False,
-                # )
                 header_text.append(
                     dumps(body_json, indent=2),
                 )
