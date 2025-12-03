@@ -10,6 +10,7 @@ def get_token(base_path: str, username: str, password: str):
         data={
             "username": username,
             "password": password,
+            "grant_type": "password"
         },
     )
     body = response.json()

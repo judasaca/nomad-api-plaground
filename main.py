@@ -15,10 +15,10 @@ def main():
     # post_upload_bundle(upload_id, client=local_client)
     # publish_upload_to_main_deployment(upload_id)
 
-    test_for_multidelete_bundle_id = "5UbdsQ4hQvih1TBQi1a_vQ"
+    #test_for_multidelete_bundle_id = "5UbdsQ4hQvih1TBQi1a_vQ"
     # download_upload_bundle(test_for_multidelete_bundle_id, local_client)
-    reset_mutidelete_upload(test_for_multidelete_bundle_id, local_client)
-    delete_single_raw_file(upload_id, "a_0/a_00.txt", local_client)
+    #reset_mutidelete_upload(test_for_multidelete_bundle_id, local_client)
+    #delete_single_raw_file(upload_id, "a_0/a_00.txt", local_client)
 
     # transfer_upload_with_bad_token(upload_id)
     # oasis_client = APIClient(base_url="http://localhost/nomad-oasis/api/v1")
