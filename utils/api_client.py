@@ -60,6 +60,10 @@ class APIClient:
             )
             border_style = status_color
             content_type = response.headers["content-type"]
+            header_text.append("content-type: ", style="bold")
+            header_text.append(
+                f"{content_type}\n", style="blue"
+            )
             if (
                 content_type == "application/json" and print_body
             ) or status_color == "red":
@@ -67,6 +71,11 @@ class APIClient:
                 header_text.append(
                     dumps(body_json, indent=2),
                 )
+            elif ("text/plain" in content_type):
+                header_text.append(
+                    response.text
+                )
+
         else:
             header_text.append("Status: ", style="bold")
             header_text.append("pending...", style="yellow")

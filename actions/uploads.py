@@ -1,8 +1,15 @@
-from utils.logger import logger
-from utils.api_client import APIClient
 from tqdm import tqdm
 
+from utils.api_client import APIClient
+from utils.logger import logger
 from utils.zip_utils import zip_folder_in_memory
+
+
+def check_if_folder_exists_or_create(path: str):
+    import os
+
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def download_upload_bundle(upload_id: str, client: APIClient):
@@ -13,6 +20,7 @@ def download_upload_bundle(upload_id: str, client: APIClient):
 
     total_downloaded = 0
     chunk_size = 8192
+    check_if_folder_exists_or_create("./files/bundle")
     filename = f"./files/bundle/{upload_id}.zip"
 
     with (
