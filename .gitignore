@@ -14,3 +14,5 @@ wheels/
 
 # download files results
 files/*
+*.zip
+*.null-ls*
