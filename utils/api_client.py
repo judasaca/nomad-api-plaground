@@ -1,16 +1,15 @@
 from json import dumps
 from typing import Any, Dict, Optional, Union
-import requests
 from urllib.parse import urljoin
 
-from config import settings
+import requests
 from loguru import logger
-from utils.auth import get_token
 from rich.console import Console
-from rich.live import Live
-from rich.text import Text
 from rich.panel import Panel
+from rich.text import Text
 
+from config import settings
+from utils.auth import get_token
 
 console = Console()
 
@@ -61,9 +60,7 @@ class APIClient:
             border_style = status_color
             content_type = response.headers["content-type"]
             header_text.append("content-type: ", style="bold")
-            header_text.append(
-                f"{content_type}\n", style="blue"
-            )
+            header_text.append(f"{content_type}\n", style="blue")
             if (
                 content_type == "application/json" and print_body
             ) or status_color == "red":
@@ -71,10 +68,8 @@ class APIClient:
                 header_text.append(
                     dumps(body_json, indent=2),
                 )
-            elif ("text/plain" in content_type):
-                header_text.append(
-                    response.text
-                )
+            elif "text/plain" in content_type:
+                header_text.append(response.text)
 
         else:
             header_text.append("Status: ", style="bold")
@@ -102,20 +97,20 @@ class APIClient:
     ) -> requests.Response:
         panel = self._generate_log_box(method, path, print_body)
         url = urljoin(self.base_url + "/", path.lstrip("/"))
-        with Live(panel, refresh_per_second=8, console=console) as live:
-            response = self.session.request(
-                method=method,
-                url=url,
-                params=params,
-                data=data,
-                json=json,
-                headers=headers,
-                files=files,
-                timeout=timeout,
-                **kwargs,
-            )
-            live.update(self._generate_log_box(method, path, print_body, response))
-            return response
+        # with Live(panel, refresh_per_second=8, console=console) as live:
+        response = self.session.request(
+            method=method,
+            url=url,
+            params=params,
+            data=data,
+            json=json,
+            headers=headers,
+            files=files,
+            timeout=timeout,
+            **kwargs,
+        )
+        # live.update(self._generate_log_box(method, path, print_body, response))
+        return response
 
     def get(self, path: str, **kwargs) -> requests.Response:
         return self._request("GET", path, **kwargs)

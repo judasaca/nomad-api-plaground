@@ -122,10 +122,10 @@ def get_upload(upload_id: str, client: APIClient):
     logger.debug(res.json())
 
 
-def create_new_upload(client: APIClient):
+def create_new_upload(client: APIClient, name: str = "Test upload"):
     buffer = zip_folder_in_memory("./files/test_multi_delete")
     files = {"file": ("test_multi_delete.zip", buffer, "application/zip")}
-    response = client.post("/uploads", files=files)
+    response = client.post("/uploads", files=files, params={"upload_name": name})
     return response
 
 

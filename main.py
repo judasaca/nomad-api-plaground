@@ -1,7 +1,6 @@
 from actions.uploads import (
     download_upload_bundle,
 )
-from entries.metadata import show_entry_metainfo
 from utils.api_client import APIClient
 
 
@@ -19,16 +18,76 @@ def start_action(client: APIClient):
 
 
 def main():
-    # upload_id = "0vEOe4LRQ0iUa69J9591nA"  # This is the upload id that has a files referencing each other
     local_client = APIClient()
-    # response = local_client.get("/actions/schemas")
-    # print(json.dumps(response.json(), indent=2))
-    # start_action(local_client)
-    entry_id = "vqMfh4k4AmdW18T75tUDZFnT5nRk"
-    metainfo_section = "dummy_nomad_plugin.schema_packages.schema_package"
-    show_entry_metainfo(local_client, entry_id, metainfo_section)
-    metainfo_id = "46e0f876b712aded080ab12ac4e9f4c2b205f03a"
-    # show_metainfo_of_section(local_client, metainfo_id)
+    # slow_operations = 0
+    # test_iterations = 20
+    # for i in range(test_iterations):
+    #    # print("-" * 40)
+    #    print(f"Running iteration {i + 1}")
+    #    total_time = create_upload_upload_file_and_delete(local_client)
+    #    if total_time > 7:
+    #        print("found!")
+    #        slow_operations += 1
+    # print("-" * 40)
+    # print(f"Total slow operations: {slow_operations} out of {test_iterations}")
+    # test_create_first_and_then_delete(local_client)
+    entry_id = "ugNqctzstxK6JfzeLQuPMaEn4b0w"
+    response = local_client.post(
+        "/graph/query",
+        json={
+            "entries": {
+                entry_id: {
+                    "archive": {
+                        "m_def": {"m_request": {"directive": "plain"}},
+                        "m_request": {
+                            "depth": 1,
+                            "directive": "plain",
+                            "m_def_format": "short",
+                        },
+                        "run[0]": {
+                            "m_def": {"m_request": {"directive": "plain"}},
+                            "m_request": {
+                                "depth": 1,
+                                "directive": "plain",
+                                "include_definition": "both",
+                                "m_def_format": "short",
+                                # "max_list_size": 3,
+                            },
+                            "calculation": {
+                                "m_request": {
+                                    "depth": 1,
+                                    "pagination": {"page": 1, "page_size": 5},
+                                    # "index": [0, 5],
+                                    "directive": "plain",
+                                },
+                            },
+                        },
+                    }
+                }
+            }
+        },
+    )
+
+    # entries_response = local_client.post(
+    #    f"/entries/{entry_id}/archive/query",
+    #    json={
+    #        "pagination": {"page": 1, "page_size": 5},
+    #        "required": {"run[0]": {"*": {"pagination": {"page": 1, "page_size": 5}}}},
+    #        "query": {"*": {"pagination": {"page": 1, "page_size": 5}}},
+    #    },
+    # )
+    try:
+        body_json = response.json()
+        calculations = body_json["entries"][entry_id]["archive"]["run"][0][
+            "calculation"
+        ]
+
+        print(calculations)
+        # entries_response_json = entries_response.json()
+        # pprint(entries_response_json)
+    except Exception:
+        pass
+        print(response.json())
 
 
 if __name__ == "__main__":
